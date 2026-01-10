@@ -3,6 +3,10 @@ name: Docker Build and Push
 on:
   push:
     branches: [ "main" ]
+  workflow_run:
+    workflows: ["Sync Upstream"]
+    types:
+      - completed
   workflow_dispatch:
 
 env:
@@ -12,6 +16,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 只在以下情况运行：
+    # 1. 直接 push 或手动触发
+    # 2. workflow_run 触发且上游 workflow 成功
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
       packages: write
